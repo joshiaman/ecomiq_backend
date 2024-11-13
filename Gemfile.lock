@@ -366,5 +366,8 @@ DEPENDENCIES
   sassc-rails
   tzinfo-data
 
+RUBY VERSION
+   ruby 3.2.5p208
+
 BUNDLED WITH
    2.5.21
