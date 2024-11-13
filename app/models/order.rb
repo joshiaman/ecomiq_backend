@@ -1,0 +1,40 @@
+class Order < ApplicationRecord
+  belongs_to :user
+  has_many :order_items, dependent: :destroy
+  has_one :payment, dependent: :destroy
+  has_many :reviews, dependent: :destroy
+
+  accepts_nested_attributes_for :order_items
+
+  STATES = {
+    pending: 'pending',
+    confirmed: 'confirmed',
+    shipped: 'shipped',
+    completed: 'completed',
+    cancelled: 'cancelled'
+  }
+
+  PAYMENT_STATUSES = {
+    unpaid: 'unpaid',
+    paid: 'paid'
+  }
+
+  # Set initial statuses
+  after_initialize :set_initial_state, if: :new_record?
+
+  private
+  def set_initial_state
+    self.status ||= STATES[:confirmed]
+    self.payment_status ||= PAYMENT_STATUSES[:unpaid]
+  end
+
+  # Calculate the total price of the order based on the associated order items
+  def calculate_total_price
+    self.total_price = order_items.sum { |item| item.quantity * item.product.price }
+  end
+  
+  # Confirm order after payment completion
+  def confirm_order
+    update(status: STATES[:confirmed], payment_status: PAYMENT_STATUSES[:paid])
+  end
+end
