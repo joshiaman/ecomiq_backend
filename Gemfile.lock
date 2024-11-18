@@ -210,7 +210,7 @@ GEM
     parser (3.3.5.1)
       ast (~> 2.4.1)
       racc
-    paypal-sdk-rest (1.7.5)
+    paypal-sdk-rest (1.7.6)
       multi_json (~> 1.0)
       xml-simple
     pg (1.5.9)
