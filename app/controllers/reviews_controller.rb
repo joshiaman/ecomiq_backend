@@ -4,8 +4,8 @@ class ReviewsController < ApplicationController
 
     def create
       order = Order.find(params[:order_id])
-      
-      if order.payment_status == 'paid'
+
+      if order.payment_status == 'paid' && order.order_items.pluck(:product_id).include?(params[:product_id].to_i)
         review = Review.new(review_params.merge(user_id: @current_user.id, order_id: order.id))
         
         if review.save
@@ -13,8 +13,10 @@ class ReviewsController < ApplicationController
         else
           render json: { errors: review.errors.full_messages }, status: :unprocessable_entity
         end
+      elsif order.payment_status != 'paid'
+        render json: { error: 'Review can only be created for products in your order' }, status: :unprocessable_entity
       else
-        render json: { error: 'Review can only be created for orders with paid status' }, status: :forbidden
+        render json: {message: "Oops!! Product you are trying to review is not a part of your order"}, status: :unprocessable_entity
       end
     end
 
