@@ -26,9 +26,9 @@ class ProductsController < ApplicationController
       render json: product.as_json(
         include: {
           category: { only: [:id, :name] },
-          vendor: { only: [:id, :name] }
+          vendor: { only: [:id, :name] },
         },
-        methods: :reviews,
+        methods: [:reviews, :avg_product_rating],
         except: [:created_at, :updated_at] # Exclude unwanted fields if needed
       )
     else
