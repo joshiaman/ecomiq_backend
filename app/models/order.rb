@@ -6,11 +6,13 @@ class Order < ApplicationRecord
 
   accepts_nested_attributes_for :order_items
 
+  def self.ransackable_attributes(auth_object = nil)
+    ["created_at", "id", "id_value", "payment_status", "status", "total_price", "updated_at", "user_id"]
+  end
+
   def self.ransackable_associations(auth_object = nil)
     ["order_items", "payment", "reviews", "user"]
   end
-
-
 
   STATES = {
     pending: 'pending',
