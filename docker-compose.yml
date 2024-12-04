@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce_backend}
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    networks:
+      - backend
+  web:
+    build: .
+    command: bash -c "bundle exec rails server -b '0.0.0.0'"
+    volumes:
+      - ".:/ecommerce_backend"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - mongo
+    env_file:
+      - .env.production
+    networks:
+      - backend
+
+networks:
+  backend:

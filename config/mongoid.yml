@@ -298,13 +298,11 @@ test:
           mode: :primary
         max_pool_size: 1
 
-# production:
-#   clients:
-#     default:
-#       database: ecommerce_backend_production
-#       hosts: <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
-#       options:
-#         user: <%= ENV['MONGO_USER'] %>
-#         password: <%= ENV['MONGO_PASSWORD'] %>
-#         auth_source: admin
-#         use_ssl: true
+production:
+  clients:
+    default:
+      database: ecommerce_backend_production
+      hosts: mongodb://postgres:password@ecomiq-docdb.cluster-cvgqsosiyjyu.ca-central-1.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false
+      options:
+        user: postgres
+        password: password
