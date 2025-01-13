@@ -34,7 +34,7 @@ gem 'activeadmin'
 gem 'devise'
 gem 'sassc-rails'
 gem 'byebug'
-gem 'carrierwave', '~> 3.0'
+gem 'carrierwave', '~> 3.1'
 gem 'mini_magick'
 gem 'paypal-sdk-rest'
 gem 'dotenv-rails', groups: [:development, :test]
