@@ -19,6 +19,7 @@ class Order < ApplicationRecord
     confirmed: 'confirmed',
     shipped: 'shipped',
     completed: 'completed',
+    incomplete: 'incomplete',
     cancelled: 'cancelled'
   }
 

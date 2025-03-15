@@ -20,7 +20,7 @@ class User < ApplicationRecord
     # Method to generate JWT for the user
     def generate_jwt
       payload = { user_id: id, exp: 24.hours.from_now.to_i }
-      JWT.encode(payload,  Rails.application.credentials.secret_key_base)
+      JWT.encode(payload, Rails.application.credentials.secret_key_base)
     end
   
     # Class method to decode a token and return the user instance if valid

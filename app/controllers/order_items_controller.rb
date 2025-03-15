@@ -6,7 +6,7 @@ class OrderItemsController < ApplicationController
         @cart_items = @current_user.order_items.where(order_id: nil).includes(:product)
         render json: @cart_items.as_json(include: {
             product: {
-            only: [:id, :name, :description, :price, :sku]
+            only: [:id, :name, :description, :price, :sku, :product_image]
             }
         })
     end

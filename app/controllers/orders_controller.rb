@@ -50,6 +50,6 @@ class OrdersController < ApplicationController
 
   private
   def calculate_total(cart_items)
-    cart_items.sum { |item| item.quantity * item.product.price }
+    cart_items.sum { |item| item.quantity * item.product.price  * 1.18 }
   end
 end

@@ -17,16 +17,15 @@ class Payment < ApplicationRecord
       purchase_units: [
         {
           amount: {
-            currency_code: "USD",
-            value: "10.00"
+            currency_code: "CAD",
+            value: order.total_price.to_s
           }
         }
       ]
     }.to_json
 
     response = http.request(request)
-    data = JSON.parse(response.body)
-    byebug
+    data = JSON.parse(response.body) 
     if response.is_a?(Net::HTTPSuccess)
       data["id"]
     else
@@ -49,14 +48,14 @@ class Payment < ApplicationRecord
 
     response = http.request(request)
     data = JSON.parse(response.body)
-    
-    "COMPLETED"
 
-    # if response.is_a?(Net::HTTPSuccess) && data["status"] == "COMPLETED"
-    #   data["status"]
-    # else
-    #   "FAILED"
-    # end
+    # "COMPLETED"
+    if response.is_a?(Net::HTTPSuccess) && data["status"] == "COMPLETED"
+      self.update(payment_id: data["id"])
+      data["status"]
+    else
+      "FAILED"
+    end
   rescue => e
     Rails.logger.error "PayPal order verification failed: #{e.message}"
     nil

@@ -12,7 +12,7 @@ class PaymentsController < ApplicationController
       payment.save!
 
       # Return the PayPal order ID to the frontend
-      render json: { order_id: order_id }, status: :ok
+      render json: { paypal_order_id: order_id, order_id: payment.order_id }, status: :ok
     else
       render json: { error: 'Payment creation failed' }, status: :unprocessable_entity
     end
@@ -22,7 +22,7 @@ class PaymentsController < ApplicationController
   def confirm_payment
     payment = @order.payment
     order_id = payment.paypal_order_id
-
+  
     if order_id.blank?
       render json: { error: 'Invalid order' }, status: :unprocessable_entity
       return
@@ -33,12 +33,13 @@ class PaymentsController < ApplicationController
 
     if capture_response == "COMPLETED"
       @order.update(payment_status: Order::PAYMENT_STATUSES[:paid])
+      @order.status == Order::STATES[:complete]
       @order.order_items.each(&:adjust_inventory)
       render json: { message: 'Payment confirmed', order: @order }, status: :ok
     else
       @order.payment_status == Order::PAYMENT_STATUSES[:unpaid]
-      @order.status == Order::STATUSES[:cancelled]
-      render json: { error: 'Payment capture failed' }, status: :unprocessable_entity
+      @order.status == Order::STATES[:incomplete]
+      render json: { error: 'Payment confirmation failed' }, status: :unprocessable_entity
     end
   end
 
