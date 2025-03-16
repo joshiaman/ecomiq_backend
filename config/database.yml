@@ -82,11 +82,11 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
-# production:
-#   <<: *default
-#   database: ecommerce_backend #ecommerce_backend_production
-#   username: postgres
-#   password: password
-#   # host: ecommerce-backend-production.cvgqsosiyjyu.ca-central-1.rds.amazonaws.com
-#   port: 5432
+production:
+  <<: *default
+  database: ecommerce_backend #_production #ecommerce_backend
+  username: postgres
+  password: password
+  host: db #ecommerce-backend-production.cvgqsosiyjyu.ca-central-1.rds.amazonaws.com
+  port: 5432
  

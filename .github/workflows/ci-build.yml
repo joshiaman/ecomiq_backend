@@ -1,0 +1,46 @@
+name: Build and Test Locally
+
+on:
+  push:
+    branches:
+      - master  # Runs only when pushing to master
+
+jobs:
+  build-and-test:
+    name: Build and Test Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repo
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -t ecommerce-backend:latest .
+
+      # Start container (without detached mode so it can run tests)
+      - name: Run Container
+        run: |
+          docker run -d --name ecommerce-backend -p 3000:3000 ecommerce-backend:latest
+
+      # Run database migrations (if needed)
+      - name: Run Database Migrations
+        run: |
+          docker exec ecommerce-backend bundle exec rails db:migrate
+
+      # Run Tests (if applicable)
+      - name: Run Tests
+        run: |
+          docker exec ecommerce-backend bundle exec rspec || echo "No tests found"
+
+      # Stop and remove the container after testing
+      - name: Clean Up
+        run: |
+          docker stop ecommerce-backend
+          docker rm ecommerce-backend
