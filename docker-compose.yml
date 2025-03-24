@@ -27,6 +27,8 @@ services:
       # - mongo
     env_file:
       - .env.production
+    environment:
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
     networks:
       - backend
 

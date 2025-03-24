@@ -24,12 +24,19 @@ jobs:
         run: |
           docker build -t ecommerce-backend:latest .
 
-      # Start container (without detached mode so it can run tests)
+      # Start container with ENV variables
       - name: Run Container
         run: |
-          docker run -d --name ecommerce-backend -p 3000:3000 ecommerce-backend:latest
+          docker run -d --name ecommerce-backend \
+            -p 3000:3000 \
+            -e SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }} \
+            ecommerce-backend:latest
 
-      # Run database migrations (if needed)
+      # Debug: Check if SECRET_KEY_BASE is set inside the container
+      - name: Verify Environment Variables
+        run: docker exec ecommerce-backend env | grep SECRET_KEY_BASE
+
+      # Run database migrations
       - name: Run Database Migrations
         run: |
           docker exec ecommerce-backend bundle exec rails db:migrate
