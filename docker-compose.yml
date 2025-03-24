@@ -22,9 +22,11 @@ services:
       - ".:/ecommerce_backend"
     ports:
       - "3000:3000"
-    depends_on:
-      - db
+    # depends_on:
+      # - db
       # - mongo
+    environment:
+      - SECRET_KEY_BASE: ${SECRET_KEY_BASE}
     env_file:
       - .env.production
     networks:
