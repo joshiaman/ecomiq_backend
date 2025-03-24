@@ -1,14 +1,14 @@
 services:
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-ecommerce_backend}
-    ports:
-      - "5433:5432"
-    networks:
-      - backend
+  #db:
+    # image: postgres:13
+    # environment:
+    #   POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    #   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    #   POSTGRES_DB: ${POSTGRES_DB:-ecommerce_backend}
+    # ports:
+    #   - "5433:5432"
+    # networks:
+    #   - backend
   # mongo:
   #   image: mongo:5.0
   #   ports:
