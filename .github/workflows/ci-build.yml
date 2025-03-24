@@ -46,8 +46,10 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ECR_REPOSITORY }}:latest
 
-      # Verify Image in ECR (optional)
+      # Extract the repository name from the secret URI
       - name: List Images in AWS ECR
         run: |
-          aws ecr list-images --repository-name ${{ secrets.AWS_ECR_REPOSITORY }}
+          ECR_REPOSITORY_NAME="${{ secrets.AWS_ECR_REPOSITORY##*/ }}"
+          aws ecr list-images --repository-name $ECR_REPOSITORY_NAME
+
 
