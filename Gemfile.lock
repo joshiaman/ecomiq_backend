@@ -141,8 +141,27 @@ GEM
       railties (>= 6.1)
     drb (2.2.1)
     erubi (1.13.0)
+    excon (1.2.5)
+      logger
     ffi (1.17.0-x86-mingw32)
     ffi (1.17.0-x86_64-linux-gnu)
+    fog-aws (3.30.0)
+      base64 (~> 0.2.0)
+      fog-core (~> 2.6)
+      fog-json (~> 1.1)
+      fog-xml (~> 0.1)
+    fog-core (2.6.0)
+      builder
+      excon (~> 1.0)
+      formatador (>= 0.2, < 2.0)
+      mime-types
+    fog-json (1.2.0)
+      fog-core
+      multi_json (~> 1.10)
+    fog-xml (0.1.5)
+      fog-core
+      nokogiri (>= 1.5.11, < 2.0.0)
+    formatador (1.1.0)
     formtastic (5.0.0)
       actionpack (>= 6.0.0)
     formtastic_i18n (0.7.0)
@@ -196,6 +215,10 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    mime-types (3.6.2)
+      logger
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2025.0318)
     mini_magick (4.13.2)
     mini_mime (1.1.5)
     minitest (5.25.1)
@@ -367,6 +390,7 @@ DEPENDENCIES
   debug
   devise
   dotenv-rails
+  fog-aws
   image_processing (~> 1.2)
   jwt
   mini_magick
