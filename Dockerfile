@@ -71,11 +71,12 @@ COPY --from=build /rails /rails
 
 # Create writable tmp/uploads for CarrierWave temp caching
 RUN mkdir -p /rails/tmp/uploads && chmod -R 777 /rails/tmp
+RUN mkdir -p /rails/public/uploads && chmod -R 777 /rails/public/uploads
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
+    chown -R rails:rails db log storage tmp public/uploads
 USER 1000:1000
 
 # Entrypoint prepares the database.
