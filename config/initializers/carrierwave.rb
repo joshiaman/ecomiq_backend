@@ -3,7 +3,6 @@ CarrierWave.configure do |config|
     provider:              'AWS',
     aws_access_key_id:     "AKIA2S2Y4DL6QW6UC3MV",
     aws_secret_access_key: "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",
-    use_iam_profile:       true,
     region:                'ca-central-1'
     }
 
