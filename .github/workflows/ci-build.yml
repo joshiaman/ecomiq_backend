@@ -51,5 +51,35 @@ jobs:
         run: |
           ECR_REPOSITORY_NAME="$(basename "${{ secrets.AWS_ECR_REPOSITORY }}")"
           aws ecr list-images --repository-name $ECR_REPOSITORY_NAME
+  
+  deploy-to-ecs:
+    name: Deploy to ECS
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update ECS Task Definition with new image
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        id: render
+        with:
+          task-definition: ecomiq-backend
+          container-name: rails
+          image: ${{ secrets.AWS_ECR_REPOSITORY }}:latest
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          cluster: ecomiq
+          service: ecomiq-backend
+          task-definition: ${{ steps.render.outputs.task-definition }}
 
