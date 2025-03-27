@@ -56,6 +56,9 @@ jobs:
             -Dsonar.organization=joshiaman
             -Dsonar.sources=.
             -Dsonar.tests=spec
+            -Dsonar.test.inclusions=spec/**/*.rb
+            -Dsonar.ruby.coverage.reportPaths=coverage/.resultset.json
+            -Dsonar.ruby.coveragePlugin=ruby
             -Dsonar.ruby.rspec.reportPaths=tmp/rspec/rspec.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
