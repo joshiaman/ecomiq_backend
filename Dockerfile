@@ -13,20 +13,19 @@ FROM ruby:${RUBY_VERSION}-slim AS base
 WORKDIR /rails
 
 # Install base packages
+# Install base system dependencies and apply security updates
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-# Install base system dependencies
-RUN apt-get update -qq && \
+    apt-get dist-upgrade -y && \
     apt-get install --no-install-recommends -y \
-    curl \
-    libjemalloc2 \
-    libvips \
-    postgresql-client \
-    nodejs \
-    yarn \
-    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
+      curl \
+      libjemalloc2 \
+      libvips \
+      postgresql-client \
+      nodejs \
+      yarn && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Set production environment
 ENV RAILS_ENV="production" \
