@@ -48,7 +48,7 @@ jobs:
           name: rspec-results
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v1.0.0
+        uses: SonarSource/sonarqube-scan-action@master
         with:
           projectBaseDir: .
         env:
