@@ -51,6 +51,12 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@master
         with:
           projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=ecomiq_backend
+            -Dsonar.organization=joshiaman
+            -Dsonar.sources=.
+            -Dsonar.tests=spec
+            -Dsonar.ruby.rspec.reportPaths=tmp/rspec/rspec.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
