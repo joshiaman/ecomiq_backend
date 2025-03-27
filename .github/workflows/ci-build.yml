@@ -123,9 +123,12 @@ jobs:
           chmod +x cosign
           sudo mv cosign /usr/local/bin/cosign
 
-      - name: Sign Docker Image with Cosign (keyless)
+      - name: Sign Docker image with Cosign
+        env:
+          COSIGN_EXPERIMENTAL: "1"
         run: |
-          cosign sign --yes --key github ${{ secrets.AWS_ECR_REPOSITORY }}:latest
+          cosign sign --yes ${{ secrets.AWS_ECR_REPOSITORY }}:latest
+        
 
       # Extract the repository name from the secret URI
       - name: List Images in AWS ECR
