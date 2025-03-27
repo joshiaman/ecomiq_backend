@@ -125,6 +125,12 @@ GEM
     connection_pool (2.4.1)
     crass (1.0.6)
     csv (3.3.0)
+    database_cleaner (2.1.0)
+      database_cleaner-active_record (>= 2, < 3)
+    database_cleaner-active_record (2.2.0)
+      activerecord (>= 5.a)
+      database_cleaner-core (~> 2.0.0)
+    database_cleaner-core (2.0.1)
     date (3.4.0)
     debug (1.9.2)
       irb (~> 1.10)
@@ -135,6 +141,8 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
+    diff-lcs (1.6.1)
+    docile (1.4.1)
     dotenv (3.1.4)
     dotenv-rails (3.1.4)
       dotenv (= 3.1.4)
@@ -143,6 +151,13 @@ GEM
     erubi (1.13.0)
     excon (1.2.5)
       logger
+    factory_bot (6.5.1)
+      activesupport (>= 6.1.0)
+    factory_bot_rails (6.4.4)
+      factory_bot (~> 6.5)
+      railties (>= 5.0.0)
+    faker (3.5.1)
+      i18n (>= 1.8.11, < 2)
     ffi (1.17.0-x86-mingw32)
     ffi (1.17.0-x86_64-linux-gnu)
     fog-aws (3.30.0)
@@ -307,6 +322,25 @@ GEM
       actionpack (>= 5.2)
       railties (>= 5.2)
     rexml (3.3.9)
+    rspec-core (3.13.3)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.3)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-rails (7.0.2)
+      actionpack (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
+      rspec-core (~> 3.13)
+      rspec-expectations (~> 3.13)
+      rspec-mocks (~> 3.13)
+      rspec-support (~> 3.13)
+    rspec-support (3.13.2)
+    rspec_junit_formatter (0.6.0)
+      rspec-core (>= 2, < 4, != 2.12.0)
     rubocop (1.68.0)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
@@ -349,6 +383,14 @@ GEM
       sprockets-rails
       tilt
     securerandom (0.3.1)
+    shoulda-matchers (6.4.0)
+      activesupport (>= 5.2.0)
+    simplecov (0.22.0)
+      docile (~> 1.1)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.13.1)
+    simplecov_json_formatter (0.1.4)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -387,9 +429,12 @@ DEPENDENCIES
   brakeman
   byebug
   carrierwave (~> 3.0)
+  database_cleaner
   debug
   devise
   dotenv-rails
+  factory_bot_rails
+  faker
   fog-aws
   image_processing (~> 1.2)
   jwt
@@ -399,8 +444,12 @@ DEPENDENCIES
   puma (>= 5.0)
   rack-cors
   rails (~> 7.2.1, >= 7.2.1.1)
+  rspec-rails (~> 7.0.0)
+  rspec_junit_formatter
   rubocop-rails-omakase
   sassc-rails
+  shoulda-matchers
+  simplecov
   tzinfo-data
 
 RUBY VERSION
