@@ -155,11 +155,11 @@ jobs:
         chmod +x cosign
         sudo mv cosign /usr/local/bin/cosign
   
-    - name: Verify Docker image using Cosign
+    - name: Verify Docker image signature with Cosign
       env:
-        COSIGN_EXPERIMENTAL: "true"
+        COSIGN_EXPERIMENTAL: "1"
       run: |
-        cosign verify --key github ${{ secrets.AWS_ECR_REPOSITORY }}:latest
+        cosign verify ${{ secrets.AWS_ECR_REPOSITORY }}:latest
 
     - name: Deploy to ECS
       run: |
