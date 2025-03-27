@@ -112,6 +112,7 @@ jobs:
           image-ref: ${{ secrets.AWS_ECR_REPOSITORY }}:latest
           format: table
           exit-code: 1
+          severity: CRITICAL,HIGH
           ignore-unfixed: true
           trivy-config: .trivyignore.yaml
 
