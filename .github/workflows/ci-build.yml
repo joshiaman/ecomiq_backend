@@ -6,7 +6,37 @@ on:
       - master  # Runs only when pushing to master
 
 jobs:
+  test:
+    name: Run RSpec Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1' # adjust if needed
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Run tests with JUnit output
+        run: |
+          mkdir -p tmp/rspec
+          bundle exec rspec --format RspecJunitFormatter --out tmp/rspec/rspec.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: rspec-results
+          path: tmp/rspec/rspec.xml
+
   sonarqube:
+    name: SonarQube Scan
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +57,7 @@ jobs:
 
   build-and-push:
     name: Build, Test, and Push Docker Image to AWS ECR
+    needs: sonarqube
     runs-on: ubuntu-latest
 
     steps:
