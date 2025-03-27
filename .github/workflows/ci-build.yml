@@ -123,14 +123,13 @@ jobs:
           chmod +x cosign
           sudo mv cosign /usr/local/bin/cosign
 
-      - name: Sign Docker image with Cosign
+      - name: Sign Docker Image with Cosign
         env:
           COSIGN_EXPERIMENTAL: "1"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         run: |
-          cosign sign --yes \
-          --oidc-issuer https://token.actions.githubusercontent.com \
-          --identity "https://github.com/joshiaman/ecomiq_backend/.github/workflows/ci-build.yml@refs/heads/master" \
-          ${{ secrets.AWS_ECR_REPOSITORY }}:latest
+          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+          cosign sign --yes --key cosign.key ${{ secrets.AWS_ECR_REPOSITORY }}:latest
         
 
       # Extract the repository name from the secret URI
@@ -152,12 +151,16 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ca-central-1
     
-    # - name: Install Cosign
-    #   run: |
-    #     curl -sSL -o cosign https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64
-    #     chmod +x cosign
-    #     sudo mv cosign /usr/local/bin/cosign
-      
+    - name: Install Cosign
+      run: |
+        curl -sSL -o cosign https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64
+        chmod +x cosign
+        sudo mv cosign /usr/local/bin/cosign
+
+    - name: Verify Docker Image with Cosign
+      run: |
+        echo "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
+        cosign verify --key cosign.pub ${{ secrets.AWS_ECR_REPOSITORY }}:latest  
 
     - name: Deploy to ECS
       run: |
