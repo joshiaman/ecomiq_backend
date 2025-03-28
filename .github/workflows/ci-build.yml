@@ -36,6 +36,7 @@ jobs:
 
   test:
     name: Run RSpec Tests
+    needs: infra-deployment
     runs-on: ubuntu-latest
 
     steps:
