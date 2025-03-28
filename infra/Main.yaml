@@ -1,0 +1,373 @@
+configuration:
+  ecomiqNamespace:
+    type: string
+    default: ecomiq
+  backendImage:
+    type: string
+    default: 727646477053.dkr.ecr.ca-central-1.amazonaws.com/ecomiq-backend:latest
+  frontendImage:
+    type: string
+    default: 727646477053.dkr.ecr.ca-central-1.amazonaws.com/ecomiq-frontend:latest
+  acmCertificateArn:
+    type: string
+    default: arn:aws:acm:ca-central-1:727646477053:certificate/f6533daa-c0e7-4eab-93f2-ab7b56ae7d9b
+resources:
+  # ---------------------------------------------------------------------------------------------------------------------
+  # NETWORKING - VPC, SUBNETS, ROUTES, GATEWAYS
+  # ---------------------------------------------------------------------------------------------------------------------
+  main:
+    type: aws:ec2:Vpc
+    properties:
+      cidrBlock: 10.0.0.0/16
+      tags:
+        Name: ${ecomiqNamespace}-vpc
+  igw:
+    type: aws:ec2:InternetGateway
+    properties:
+      vpcId: ${main.id}
+      tags:
+        Name: ${ecomiqNamespace}-igw
+  nat:
+    type: aws:ec2:NatGateway
+    properties:
+      allocationId: ${natEip.id}
+      subnetId: ${publicA.id}
+      tags:
+        Name: ${ecomiqNamespace}-nat
+  natEip:
+    type: aws:ec2:Eip
+    name: nat
+    properties:
+      domain: vpc
+  publicA:
+    type: aws:ec2:Subnet
+    name: public_a
+    properties:
+      vpcId: ${main.id}
+      cidrBlock: 10.0.1.0/24
+      availabilityZone: ca-central-1a
+      mapPublicIpOnLaunch: true
+      tags:
+        Name: ${ecomiqNamespace}-public-a
+  publicB:
+    type: aws:ec2:Subnet
+    name: public_b
+    properties:
+      vpcId: ${main.id}
+      cidrBlock: 10.0.2.0/24
+      availabilityZone: ca-central-1b
+      mapPublicIpOnLaunch: true
+      tags:
+        Name: ${ecomiqNamespace}-public-b
+  privateA:
+    type: aws:ec2:Subnet
+    name: private_a
+    properties:
+      vpcId: ${main.id}
+      cidrBlock: 10.0.3.0/24
+      availabilityZone: ca-central-1a
+      tags:
+        Name: ${ecomiqNamespace}-private-a
+  privateB:
+    type: aws:ec2:Subnet
+    name: private_b
+    properties:
+      vpcId: ${main.id}
+      cidrBlock: 10.0.4.0/24
+      availabilityZone: ca-central-1b
+      tags:
+        Name: ${ecomiqNamespace}-private-b
+  public:
+    type: aws:ec2:RouteTable
+    properties:
+      vpcId: ${main.id}
+      routes:
+        - cidrBlock: 0.0.0.0/0
+          gatewayId: ${igw.id}
+      tags:
+        Name: ${ecomiqNamespace}-public-rt
+  publicARouteTableAssociation:
+    type: aws:ec2:RouteTableAssociation
+    name: public_a
+    properties:
+      subnetId: ${publicA.id}
+      routeTableId: ${public.id}
+  publicBRouteTableAssociation:
+    type: aws:ec2:RouteTableAssociation
+    name: public_b
+    properties:
+      subnetId: ${publicB.id}
+      routeTableId: ${public.id}
+  private:
+    type: aws:ec2:RouteTable
+    properties:
+      vpcId: ${main.id}
+      routes:
+        - cidrBlock: 0.0.0.0/0
+          natGatewayId: ${nat.id}
+      tags:
+        Name: ${ecomiqNamespace}-private-rt
+  privateARouteTableAssociation:
+    type: aws:ec2:RouteTableAssociation
+    name: private_a
+    properties:
+      subnetId: ${privateA.id}
+      routeTableId: ${private.id}
+  privateBRouteTableAssociation:
+    type: aws:ec2:RouteTableAssociation
+    name: private_b
+    properties:
+      subnetId: ${privateB.id}
+      routeTableId: ${private.id}
+  # ---------------------------------------------------------------------------------------------------------------------
+  # SECURITY GROUPS
+  # ---------------------------------------------------------------------------------------------------------------------
+  ecs:
+    type: aws:ec2:SecurityGroup
+    properties:
+      name: ${ecomiqNamespace}-ecs-sg
+      description: Allow inbound HTTP and HTTPS
+      vpcId: ${main.id}
+      ingress:
+        - fromPort: 80
+          toPort: 80
+          protocol: tcp
+          cidrBlocks:
+            - 0.0.0.0/0
+        - fromPort: 443
+          toPort: 443
+          protocol: tcp
+          cidrBlocks:
+            - 0.0.0.0/0
+      egress:
+        - fromPort: 0
+          toPort: 0
+          protocol: '-1'
+          cidrBlocks:
+            - 0.0.0.0/0
+      tags:
+        Name: ${ecomiqNamespace}-sg
+  # ---------------------------------------------------------------------------------------------------------------------
+  # ECS CLUSTER AND IAM ROLES
+  # ---------------------------------------------------------------------------------------------------------------------
+  ecomiq:
+    type: aws:ecs:Cluster
+    properties:
+      name: ${ecomiqNamespace}-cluster
+  ecsTaskExecution:
+    type: aws:iam:Role
+    name: ecs_task_execution
+    properties:
+      name: ecsTaskExecutionRole
+      assumeRolePolicy:
+        fn::toJSON:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: ecs-tasks.amazonaws.com
+              Action: sts:AssumeRole
+      tags:
+        Name: ecsTaskExecutionRole
+  # Attach ECS execution policy
+  ecsExecutionRolePolicy:
+    type: aws:iam:RolePolicyAttachment
+    name: ecs_execution_role_policy
+    properties:
+      role: ${ecsTaskExecution.name}
+      policyArn: arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  # Attach full S3 access
+  ecsS3Access:
+    type: aws:iam:RolePolicyAttachment
+    name: ecs_s3_access
+    properties:
+      role: ${ecsTaskExecution.name}
+      policyArn: arn:aws:iam::aws:policy/AmazonS3FullAccess
+  # Attach full Secrets Manager access
+  ecsSecretsmanagerAccess:
+    type: aws:iam:RolePolicyAttachment
+    name: ecs_secretsmanager_access
+    properties:
+      role: ${ecsTaskExecution.name}
+      policyArn: arn:aws:iam::aws:policy/SecretsManagerReadWrite
+  # ---------------------------------------------------------------------------------------------------------------------
+  # ALB + TARGET GROUPS + HTTPS LISTENER
+  # ---------------------------------------------------------------------------------------------------------------------
+  ecomiqLoadBalancer:
+    type: aws:lb:LoadBalancer
+    name: ecomiq
+    properties:
+      name: ${ecomiqNamespace}-alb
+      internal: false
+      loadBalancerType: application
+      subnets:
+        - ${publicA.id}
+        - ${publicB.id}
+      securityGroups:
+        - ${ecs.id}
+      enableDeletionProtection: false
+  frontend:
+    type: aws:lb:TargetGroup
+    properties:
+      name: frontend-tg
+      port: 80
+      protocol: HTTP
+      targetType: ip
+      vpcId: ${main.id}
+  backend:
+    type: aws:lb:TargetGroup
+    properties:
+      name: backend-tg
+      port: 3000
+      protocol: HTTP
+      targetType: ip
+      vpcId: ${main.id}
+      healthCheck:
+        path: /up
+        port: '3000'
+        protocol: HTTP
+        healthyThreshold: 2
+        unhealthyThreshold: 3
+        timeout: 5
+        interval: 30
+        matcher: 200-399
+  https:
+    type: aws:lb:Listener
+    properties:
+      loadBalancerArn: ${ecomiqLoadBalancer.arn}
+      port: 443
+      protocol: HTTPS
+      sslPolicy: ELBSecurityPolicy-2016-08
+      certificateArn: ${acmCertificateArn}
+      defaultActions:
+        - type: fixed-response
+          fixedResponse:
+            contentType: text/plain
+            messageBody: 404 Not Found
+            statusCode: '404'
+  # Rule for frontend.ecomiqstore.com → frontend target group (port 80)
+  frontendListenerRule:
+    type: aws:lb:ListenerRule
+    name: frontend
+    properties:
+      listenerArn: ${https.arn}
+      priority: 100
+      actions:
+        - type: forward
+          targetGroupArn: ${frontend.arn}
+      conditions:
+        - hostHeader:
+            values:
+              - frontend.ecomiqstore.com
+  # Rule for backend.ecomiqstore.com → backend target group (port 3000)
+  backendListenerRule:
+    type: aws:lb:ListenerRule
+    name: backend
+    properties:
+      listenerArn: ${https.arn}
+      priority: 200
+      actions:
+        - type: forward
+          targetGroupArn: ${backend.arn}
+      conditions:
+        - hostHeader:
+            values:
+              - backend.ecomiqstore.com
+  # ---------------------------------------------------------------------------------------------------------------------
+  # ECS TASK DEFINITIONS & SERVICES
+  # ---------------------------------------------------------------------------------------------------------------------
+  frontendTaskDefinition:
+    type: aws:ecs:TaskDefinition
+    name: frontend
+    properties:
+      family: ${ecomiqNamespace}-frontend
+      requiresCompatibilities:
+        - FARGATE
+      networkMode: awsvpc
+      cpu: '512'
+      memory: '1024'
+      executionRoleArn: ${ecsTaskExecution.arn}
+      containerDefinitions:
+        fn::toJSON:
+          - name: frontend
+            image: ${frontendImage}
+            essential: true
+            portMappings:
+              - containerPort: 80
+                protocol: tcp
+            logConfiguration:
+              logDriver: awslogs
+              options:
+                awslogs-group: /ecs/${ecomiqNamespace}-frontend
+                awslogs-region: ca-central-1
+                awslogs-stream-prefix: ecs
+  backendTaskDefinition:
+    type: aws:ecs:TaskDefinition
+    name: backend
+    properties:
+      family: ${ecomiqNamespace}-backend
+      networkMode: awsvpc
+      requiresCompatibilities:
+        - FARGATE
+      cpu: '1024'
+      memory: '3072'
+      executionRoleArn: ${ecsTaskExecution.arn}
+      taskRoleArn: ${ecsTaskExecution.arn}
+      containerDefinitions:
+        fn::toJSON:
+          - name: backend
+            image: ${backendImage}
+            essential: true
+            portMappings:
+              - containerPort: 3000
+                hostPort: 3000
+                protocol: tcp
+            environment:
+              - name: RAILS_MASTER_KEY
+                value: e95ecaf6037b6116172b666d376a18bb
+            logConfiguration:
+              logDriver: awslogs
+              options:
+                awslogs-group: /ecs/${ecomiqNamespace}-backend
+                awslogs-region: ca-central-1
+                awslogs-stream-prefix: ecs
+  frontendService:
+    type: aws:ecs:Service
+    name: frontend
+    properties:
+      name: ${ecomiqNamespace}-frontend
+      cluster: ${ecomiq.id}
+      taskDefinition: ${frontendTaskDefinition.arn}
+      launchType: FARGATE
+      desiredCount: 2
+      networkConfiguration:
+        subnets:
+          - ${privateA.id}
+          - ${privateB.id}
+        securityGroups:
+          - ${ecs.id}
+        assignPublicIp: false
+      loadBalancers:
+        - targetGroupArn: ${frontend.arn}
+          containerName: frontend
+          containerPort: 80
+  backendService:
+    type: aws:ecs:Service
+    name: backend
+    properties:
+      name: ${ecomiqNamespace}-backend
+      cluster: ${ecomiq.id}
+      taskDefinition: ${backendTaskDefinition.arn}
+      launchType: FARGATE
+      desiredCount: 2
+      networkConfiguration:
+        subnets:
+          - ${privateA.id}
+          - ${privateB.id}
+        securityGroups:
+          - ${ecs.id}
+        assignPublicIp: false
+      loadBalancers:
+        - targetGroupArn: ${backend.arn}
+          containerName: backend
+          containerPort: 3000

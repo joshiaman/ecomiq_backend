@@ -1,0 +1,5 @@
+name: infra
+runtime: yaml
+config:
+  aws:region:
+    value: ca-central-1
