@@ -202,17 +202,49 @@ jobs:
       run: |
         echo "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
         cosign verify --key cosign.pub ${{ secrets.AWS_ECR_REPOSITORY }}:latest  
+    
+    - name: Install jq
+      run: sudo apt-get install -y jq
 
-    - name: Deploy to ECS
+    - name: Deploy to ECS with Updated Task Definition
       run: |
         ecs_cluster_name="ecomiq-cluster"
         ecs_service_name="ecomiq-backend"
+        container_name="backend"
         image_uri="${{ secrets.AWS_ECR_REPOSITORY }}:latest"
-        
-        # Get the current task definition to use the existing one
-        current_task_definition=$(aws ecs describe-services --cluster $ecs_cluster_name --services $ecs_service_name --query "services[0].taskDefinition" --output text)
-
-        # Update ECS service with the latest image without changing the task definition
-        echo "Updating ECS service to use the latest image..."
-        aws ecs update-service --cluster $ecs_cluster_name --service $ecs_service_name --task-definition $current_task_definition --force-new-deployment
+    
+        echo "Fetching current task definition..."
+        current_task_def_arn=$(aws ecs describe-services \
+          --cluster $ecs_cluster_name \
+          --services $ecs_service_name \
+          --query "services[0].taskDefinition" \
+          --output text)
+    
+        echo "Getting task definition JSON..."
+        task_def_json=$(aws ecs describe-task-definition \
+          --task-definition $current_task_def_arn \
+          --query "taskDefinition" \
+          --output json)
+    
+        echo "Creating new task definition revision with updated image..."
+        new_task_def=$(echo "$task_def_json" | jq \
+          --arg IMAGE "$image_uri" \
+          --arg CONTAINER_NAME "$container_name" \
+          'del(.status, .taskDefinitionArn, .revision, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)
+          | .containerDefinitions |= map(if .name == $CONTAINER_NAME then .image = $IMAGE else . end)')
+    
+        new_task_def_arn=$(aws ecs register-task-definition \
+          --cli-input-json "$new_task_def" \
+          --query "taskDefinition.taskDefinitionArn" \
+          --output text)
+    
+        echo "Updating ECS service with new task definition revision..."
+        aws ecs update-service \
+          --cluster $ecs_cluster_name \
+          --service $ecs_service_name \
+          --task-definition $new_task_def_arn \
+          --force-new-deployment
+    
+    
+    
 
