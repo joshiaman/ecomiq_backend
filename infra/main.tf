@@ -310,7 +310,7 @@ resource "aws_ecs_task_definition" "backend" {
         logDriver = "awslogs"
         options = {
           awslogs-group         = "/ecs/${var.ecomiq_namespace}-backend"
-          awslogs-region        = var.aws_region
+          awslogs-region        = "ca-central-1"
           awslogs-stream-prefix = "ecs"
         }
       }
