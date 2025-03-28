@@ -87,6 +87,6 @@ production:
   database: ecomiqdev #_production #ecommerce_backend
   username: postgres
   password: password
-  host: ecomiqdev.ct6gg0owa951.ca-central-1.rds.amazonaws.com
+  host: ecomiqprod.ct6gg0owa951.ca-central-1.rds.amazonaws.com
   port: 5432
  
