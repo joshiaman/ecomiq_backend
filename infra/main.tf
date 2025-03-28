@@ -155,9 +155,45 @@ resource "aws_ecs_cluster" "ecomiq" {
   name = "${var.ecomiq_namespace}-cluster"
 }
 
-data "aws_iam_role" "ecs_task_execution" {
+resource "aws_iam_role" "ecs_task_execution" {
   name = "ecsTaskExecutionRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Name = "ecsTaskExecutionRole"
+  }
 }
+
+# Attach ECS execution policy
+resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
+  role       = aws_iam_role.ecs_task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# Attach full S3 access
+resource "aws_iam_role_policy_attachment" "ecs_s3_access" {
+  role       = aws_iam_role.ecs_task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+# Attach full Secrets Manager access
+resource "aws_iam_role_policy_attachment" "ecs_secretsmanager_access" {
+  role       = aws_iam_role.ecs_task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ALB + TARGET GROUPS + HTTPS LISTENER
@@ -260,7 +296,7 @@ resource "aws_ecs_task_definition" "frontend" {
   network_mode             = "awsvpc"
   cpu                      = "512"
   memory                   = "1024"
-  execution_role_arn       = data.aws_iam_role.ecs_task_execution.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   container_definitions    = jsonencode([
     {
       name      = "frontend"
@@ -285,8 +321,8 @@ resource "aws_ecs_task_definition" "backend" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "1024"
   memory                   = "3072"
-  execution_role_arn       = data.aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = data.aws_iam_role.ecs_task_execution.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task_execution.arn
 
   container_definitions = jsonencode([
     {
