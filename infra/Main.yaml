@@ -374,7 +374,9 @@ resources:
   # ---------------------------------------------------------------------------------------------------------------------
   # AWS FIREWALL RULES
   # ---------------------------------------------------------------------------------------------------------------------
-  aws:wafv2/webAcl:WebAcl ecomiqWAF:
+  ecomiqWAF:
+  type: aws:wafv2:WebAcl
+  properties:
     name: ecomiq-waf
     scope: REGIONAL
     defaultAction:
@@ -396,9 +398,9 @@ resources:
       cloudwatchMetricsEnabled: true
       metricName: wafMetric
       sampledRequestsEnabled: true
-  
-  # Attach WAF to ALB
-  aws:wafv2/webAclAssociation:WebAclAssociation ecomiqWAFAssociation:
+
+  ecomiqWAFAssociation:
+    type: aws:wafv2:WebAclAssociation
     properties:
       resourceArn: ${ecomiqLoadBalancer.arn}
       webAclArn: ${ecomiqWAF.arn}
