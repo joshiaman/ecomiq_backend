@@ -371,3 +371,34 @@ resources:
         - targetGroupArn: ${backend.arn}
           containerName: backend
           containerPort: 3000
+  # ---------------------------------------------------------------------------------------------------------------------
+  # AWS FIREWALL RULES
+  # ---------------------------------------------------------------------------------------------------------------------
+  aws:wafv2/webAcl:WebAcl ecomiqWAF:
+    name: ecomiq-waf
+    scope: REGIONAL
+    defaultAction:
+      allow: {}
+    rules:
+      - name: block-bad-bots
+        priority: 1
+        action:
+          block: {}
+        statement:
+          managedRuleGroupStatement:
+            name: AWSManagedRulesBotControlRuleSet
+            vendorName: AWS
+        visibilityConfig:
+          cloudwatchMetricsEnabled: true
+          metricName: blockBadBots
+          sampledRequestsEnabled: true
+    visibilityConfig:
+      cloudwatchMetricsEnabled: true
+      metricName: wafMetric
+      sampledRequestsEnabled: true
+  
+  # Attach WAF to ALB
+  aws:wafv2/webAclAssociation:WebAclAssociation ecomiqWAFAssociation:
+    properties:
+      resourceArn: ${ecomiqLoadBalancer.arn}
+      webAclArn: ${ecomiqWAF.arn}
