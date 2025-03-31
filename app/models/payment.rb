@@ -67,7 +67,7 @@ class Payment < ApplicationRecord
     http.use_ssl = true
 
     request = Net::HTTP::Post.new(uri.path)
-    request.basic_auth(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
+    request.basic_auth("AdxNKa1BCIwnicc9p1fCYGOH1bUYSbnDJNfFSkxt3HKhoEwgTrETaYWBP1lR9dG86NlLugIO8PsMMB0Z", "EKWHe0nt2A0Di_Dn0UlQAG4NEUc2bSEzHM7vKZu0cUqHLZCuHxAkvt9KwiDGBhx0Mkbr_LV81y6Kcyzt")
     request.set_form_data({ grant_type: "client_credentials" })
 
     response = http.request(request)
