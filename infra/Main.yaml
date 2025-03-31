@@ -399,6 +399,7 @@ resources:
       metricName: wafMetric
       sampledRequestsEnabled: true
 
+
   ecomiqWAFAssociation:
     type: aws:wafv2:WebAclAssociation
     properties:
